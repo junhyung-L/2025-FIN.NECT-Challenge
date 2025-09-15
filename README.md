@@ -160,8 +160,8 @@
 
 ## 11) 리소스
 
-* **발표자료**: `./reports/SubLocal_ 최종본.pdf`
-* **FIN\:NECT 참가 문서**: `./reports/2025년 FINNECT 챌린지_참가신청서.pdf`
+* **발표자료**: [SubLocal 최종본](./reports/SubLocal_ 최종본.pdf)
+* **FIN\:NECT 참가 문서**: [FINNECT 챌린지_참가신청서](./reports/2025년 FINNECT 챌린지_참가신청서.pdf)
 
 ---
 
