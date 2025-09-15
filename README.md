@@ -1,5 +1,5 @@
 # 2025-FIN:NECT-Challenge
-# SubLocal – 지역 소상공인을 위한 구독형 결제·정산 OMO 플랫폼
+## SubLocal – 지역 소상공인을 위한 구독형 결제·정산 OMO 플랫폼
 
 > 소상공인의 **예측 가능한 고정 매출**과 소비자의 **원클릭 주문·자동결제**를 동시에 실현하는 지역 기반 OMO(Online‑Merge‑Offline) 생태계.
 
@@ -174,7 +174,7 @@
 
 ## 13) HTML을 통한 앱 구현 (초안)
 
-**실행 데모**: [바로가기](https://<junhyung-L>.github.io/2025-FIN.NECT-Challenge/result/서브로컬_최종버전.html)
+**실행 데모**: [바로가기](https://<junhyung-L>.github.io/2025-FIN.NECT-Challenge/서브로컬_최종버전.html)
 
 > 현재 저장소는 **기획/발표 문서와 README** 중심으로 공개되어 있으며(아이디어 기획),
 > 코드/설계 산출물은 MVP 정리 후 순차 공개 예정입니다(html을 통한 앱 구상구현).
