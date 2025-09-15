@@ -174,23 +174,10 @@
 
 ## 13) HTML을 통한 앱 구현 (초안)
 
-```bash
-# 1) monorepo 예시 (추가 예정)
-apps/
-  web-app/       # Next.js/React Native (추가 예정)
-  merchant-web/  # Next.js (대시보드)
-services/
-  billing/       # 결제/정산 스케줄러
-  subscription/  # 구독 엔진
-  notifier/      # 알림(푸시/SMS/Email)
-  api-gateway/   # GraphQL/REST
-infra/
-  terraform/     # IaC (선택)
-  docker/        # Compose/Helm
-```
+**실행 데모**: [바로가기](https://<junhyung-L>.github.io/2025-FIN.NECT-Challenge/result/서브로컬_최종버전.html)
 
 > 현재 저장소는 **기획/발표 문서와 README** 중심으로 공개되어 있으며(아이디어 기획),
-> 코드/설계 산출물은 MVP 정리 후 순차 공개 예정입니다(미구현).
+> 코드/설계 산출물은 MVP 정리 후 순차 공개 예정입니다(html을 통한 앱 구상구현).
 
 ---
 
