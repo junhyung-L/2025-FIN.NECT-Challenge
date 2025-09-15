@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SubLocal - 지역 소상공인 구독 경제 플랫폼</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4338CA;
+            --primary-dark-color: #3730A3;
+            --secondary-color: #10B981;
+            --secondary-dark-color: #059669;
+            --accent-color: #F97316;
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+            --bg-light: #F9FAFB;
+            --bg-white: #FFFFFF;<
+            --border-color: #E5E7EB;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body { height: 100%; overflow: hidden; }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 414px;
+            margin: 0 auto;
+            background: var(--bg-white);
+            height: 100%;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: var(--bg-white);
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo { font-size: 24px; font-weight: 700; color: var(--primary-color); cursor: pointer; }
+        .logo .local { color: var(--accent-color); }
+
+        .auth-links { display: flex; gap: 12px; font-size: 14px; align-items: center; }
+        .auth-links a { color: var(--text-secondary); text-decoration: none; padding: 6px 12px; border-radius: 8px; transition: all 0.3s ease; }
+        .auth-links a:hover { background: #F3F4F6; color: var(--primary-color); }
+
+        #consumer-pages {
+            flex-grow: 1;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .bottom-nav {
+            position: relative;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px); 
+            border-top: 1px solid var(--border-color);
+            display: flex; 
+            justify-content: space-around; 
+            padding: 8px 0; 
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px;
+            border-radius: 8px; cursor: pointer; transition: all 0.3s ease;
+            font-size: 12px; color: var(--text-secondary); width: 64px;
+        }
+        .nav-item.active { color: var(--primary-color); background: #EEF2FF; }
+        .nav-item:hover:not(.active) { background: #F3F4F6; }
+        .nav-item svg { width: 24px; height: 24px; }
+
+        .page { display: none; padding: 20px; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .page.active { display: block; }
+
+        .card {
+            background: var(--bg-white); border-radius: 16px; padding: 20px; margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #F3F4F6; transition: all 0.3s ease;
+        }
+        .card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.12); transform: translateY(-4px); }
+
+        .btn {
+            padding: 12px 20px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer;
+            transition: all 0.3s ease; font-size: 16px; display: inline-flex; align-items: center; gap: 8px; justify-content: center;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary { background: var(--primary-color); color: white; }
+        .btn-primary:hover { background: var(--primary-dark-color); box-shadow: 0 4px 15px rgba(67, 56, 202, 0.2); }
+        .btn-secondary { background: var(--secondary-color); color: white; }
+        .btn-secondary:hover { background: var(--secondary-dark-color); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2); }
+        .btn-outline { background: transparent; color: var(--primary-color); border: 2px solid var(--primary-color); }
+        .btn-outline:hover { background: var(--primary-color); color: white; }
+        .btn-small { padding: 8px 16px; font-size: 12px; border-radius: 8px; }
+
+        .section-title { font-size: 22px; font-weight: 700; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .more-link { font-size: 14px; color: var(--text-secondary); text-decoration: none; }
+        .more-link:hover { color: var(--primary-color); }
+
+        .subscription-item { display: flex; align-items: center; gap: 16px; padding: 16px; background: #F9FAFB; border-radius: 12px; margin-bottom: 12px; cursor: pointer; }
+        .subscription-icon { width: 52px; height: 52px; background: var(--primary-color); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 28px; color: white; }
+        .subscription-info { flex: 1; }
+        .subscription-name { font-weight: 600; }
+        .subscription-price { color: var(--text-secondary); font-size: 14px; }
+        
+        /* 점주 앱 (다크 모드) */
+        .owner-app { background: #111827; color: #E5E7EB; height: 100%; display: flex; flex-direction: column;}
+        .owner-app .header { background: #1F2937; border-bottom-color: #374151; }
+        .owner-app .logo { color: var(--secondary-color); }
+        .owner-app .logo .local { color: var(--accent-color); }
+        .owner-app .card { background: #1F2937; border-color: #374151; }
+        .owner-app .btn-primary { background: var(--secondary-color); }
+        .owner-app .btn-primary:hover { background: var(--secondary-dark-color); }
+        .owner-app .btn-secondary { background: var(--primary-color); }
+        .owner-app .btn-secondary:hover { background: var(--primary-dark-color); }
+        .owner-app .form-input { background: #374151; border: 1px solid #4B5563; color: white; }
+        .owner-app .form-input:focus { border-color: var(--secondary-color); }
+        .owner-app .activity-item { padding: 12px 0; border-bottom: 1px solid #4B5563; }
+        .owner-app .activity-item:last-child { border-bottom: none; }
+        .owner-app .activity-time { font-size: 12px; color: #9CA3AF; }
+
+        /* 모달 */
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6);
+            display: none; align-items: center; justify-content: center; z-index: 1000;
+            backdrop-filter: blur(5px); animation: fadeInModal 0.3s ease;
+        }
+        @keyframes fadeInModal { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeOutModal { from { opacity: 1; } to { opacity: 0; } }
+        .modal.fade-out { animation: fadeOutModal 0.3s ease forwards; }
+        .modal.show { display: flex; }
+        .modal-content {
+            background: white; border-radius: 20px; padding: 24px; width: 90%;
+            max-width: 380px; max-height: 90vh; overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); animation: slideInUp 0.4s ease;
+        }
+        @keyframes slideInUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .owner-app .modal-content { background: #1F2937; color: #E5E7EB; }
+        .modal-title { font-size: 20px; font-weight: 700; margin-bottom: 24px; text-align: center; }
+        .modal-close {
+            position: absolute; top: 16px; right: 16px; background: #E5E7EB; border: none;
+            width: 32px; height: 32px; border-radius: 50%; font-size: 18px; cursor: pointer;
+            color: var(--text-secondary); display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .modal-close:hover { background: #D1D5DB; transform: rotate(90deg); }
+
+        /* 토스트 알림 */
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 10px; pointer-events: none;}
+        .toast {
+            background-color: var(--text-primary); color: white; padding: 15px 20px; border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px;
+            opacity: 0; transform: translateX(100%); transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        .toast.show { opacity: 1; transform: translateX(0); }
+        .toast.success { background-color: var(--secondary-color); }
+        .toast.error { background-color: #EF4444; }
+
+        /* 이미지 업로드 */
+        .image-uploader {
+            width: 100%; height: 150px; border: 2px dashed var(--border-color); border-radius: 12px;
+            display: flex; align-items: center; justify-content: center; flex-direction: column;
+            cursor: pointer; margin-bottom: 16px; background-color: var(--bg-light);
+            transition: all 0.3s ease; overflow: hidden;
+        }
+        .image-uploader:hover { border-color: var(--primary-color); }
+        .owner-app .image-uploader { background-color: #374151; border-color: #4B5563; }
+        .owner-app .image-uploader:hover { border-color: var(--secondary-color); }
+        .image-uploader img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 14px; }
+        .form-input {
+            width: 100%; padding: 12px 16px; border: 1px solid var(--border-color);
+            border-radius: 8px; background: var(--bg-light); color: var(--text-primary); font-size: 16px;
+        }
+        .form-input:focus { outline: none; border-color: var(--primary-color); }
+
+        .hidden { display: none !important; }
+        .loading { display: inline-block; width: 20px; height: 20px; border: 2px solid #f3f3f3; border-top: 2px solid var(--primary-color); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* 지도 관련 스타일 */
+        .map-container { position: relative; width: 100%; height: 75vh; background: #E5E7EB; border-radius: 16px; overflow: hidden; }
+        .map-pin {
+            position: absolute; width: 32px; height: 32px; background: var(--primary-color);
+            border-radius: 50% 50% 50% 0; transform: rotate(-45deg); cursor: pointer;
+            display: flex; align-items: center; justify-content: center; color: white;
+            font-size: 16px; transition: all 0.2s;
+        }
+        .map-pin:hover { transform: rotate(-45deg) scale(1.2); }
+        .map-pin::before { content: '📍'; transform: rotate(45deg); }
+        .map-info {
+            position: absolute; background: white; padding: 12px; border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; min-width: 200px;
+            z-index: 10;
+        }
+        .map-info.show { display: block; }
+        .map-filters { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 8px; }
+        .filter-btn { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border-color); background: var(--bg-white); cursor: pointer; white-space: nowrap; }
+        .filter-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+        
+        /* 추천 광고 캐러셀 */
+        .carousel { position: relative; height: 120px; border-radius: 16px; overflow: hidden; margin-bottom: 24px; }
+        .carousel-slide {
+            position: absolute; width: 100%; height: 100%; background: linear-gradient(135deg, var(--primary-color), var(--primary-dark-color));
+            display: flex; align-items: center; justify-content: center; color: white;
+            font-size: 18px; font-weight: 500; opacity: 0; transition: opacity 0.5s;
+        }
+        .carousel-slide.active { opacity: 1; }
+        .ad-badge { background: var(--secondary-color); color: white; padding: 4px 8px; border-radius: 6px; font-size: 10px; margin-left: auto; }
+
+        /* 점주 대시보드 스크롤 레이아웃 */
+        .owner-dashboard-layout { display: flex; flex-direction: column; height: 100%; }
+        .owner-dashboard-layout .header { flex-shrink: 0; }
+        .owner-dashboard-layout .content { flex-grow: 1; overflow-y: auto; padding: 20px; }
+        .owner-dashboard-layout .footer { flex-shrink: 0; padding: 20px; background: #1F2937; border-top: 1px solid #374151;}
+
+        /* AI 챗봇 스타일 */
+        #ai-chatbot-fab {
+            position: fixed;
+            bottom: 80px; /* bottom-nav height + margin */
+            left: 50%;
+            transform: translateX(calc(207px - 100% - 20px)); /* (container_width / 2) - fab_width - margin */
+            width: 50px;
+            height: 50px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 999;
+            transition: transform 0.3s ease;
+        }
+        #ai-chatbot-fab:hover { transform: translateX(calc(207px - 100% - 20px)) scale(1.1); }
+        .chatbot-messages { height: 300px; overflow-y: auto; margin-bottom: 16px; padding: 10px; background: var(--bg-light); border-radius: 12px; }
+        .chat-message { margin-bottom: 12px; display: flex; }
+        .chat-message.user { justify-content: flex-end; }
+        .chat-message .bubble { padding: 10px 15px; border-radius: 18px; max-width: 80%; }
+        .chat-message.user .bubble { background: var(--primary-color); color: white; }
+        .chat-message.bot .bubble { background: #E5E7EB; color: var(--text-primary); }
+        .chatbot-input-form { display: flex; gap: 8px; }
+        .chatbot-input-form input { flex-grow: 1; }
+
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+
+    <div class="container" id="app">
+        <!-- 소비자 앱 -->
+        <div id="consumer-app" style="display: flex; flex-direction: column; height: 100%;">
+            <div class="header">
+                <div class="logo" onclick="goToHome()">Sub<span class="local">Local</span></div>
+                <div class="auth-links" id="auth-links-consumer"></div>
+            </div>
+
+            <div id="consumer-pages">
+                <div class="page active" id="home-page"></div>
+                <div class="page" id="map-page"></div>
+                <div class="page" id="recommend-page"></div>
+                <div class="page" id="settings-page"></div>
+            </div>
+            
+            <div id="ai-chatbot-fab" onclick="showAIChatbotModal()">💬</div>
+
+            <div class="bottom-nav">
+                <div class="nav-item active" onclick="switchPage(event, 'home')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg><div>홈</div></div>
+                <div class="nav-item" onclick="switchPage(event, 'map')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg><div>지도</div></div>
+                <div class="nav-item" onclick="switchPage(event, 'recommend')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg><div>추천</div></div>
+                <div class="nav-item" onclick="switchPage(event, 'settings')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1 0-2l.15-.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg><div>설정</div></div>
+            </div>
+        </div>
+
+        <!-- 점주 앱 -->
+        <div id="owner-app" class="owner-app hidden">
+             <!-- 이 내부는 renderOwnerLoginPage와 renderOwnerDashboard 함수로 동적 생성됩니다 -->
+        </div>
+
+        <!-- 모달 컨테이너 -->
+        <div id="modal-container"></div>
+    </div>
+
+    <script>
+        // --- 전역 상태 및 데이터 ---
+        let state = {
+            currentMode: 'consumer',
+            currentPage: 'home',
+            loggedInUser: null,
+            loggedInOwner: null,
+            products: [
+                { id: 'prod001', ownerId: 'owner01', name: '매일 아메리카노', store: '열정 카페', icon: '☕️', description: '신선한 원두로 매일 내려드리는 정성 가득한 커피. 하루를 활기차게 시작하세요!', price: 55000, savings: 5000, frequency: 12, image: 'https://images.unsplash.com/photo-1559496417-e7f25cb247f3?q=80&w=3464&auto=format&fit=crop', tags: ['카페'], isAd: true, appliedCurrencyId: 'lc001' },
+                { id: 'prod002', ownerId: 'owner01', name: '월 세탁 서비스', store: '깔끔 세탁소', icon: '👔', description: '와이셔츠, 블라우스 등 매월 5벌까지! 다림질까지 완벽하게 해드립니다.', price: 30000, savings: 15000, frequency: 1, image: 'https://imgur.com/gmwLmQt.jpg', tags: ['서비스'], appliedCurrencyId: null },
+                { id: 'prod003', ownerId: 'owner01', name: '수제 베이글 샌드위치', store: '맛있는 베이커리', icon: '🥯', description: '매일 아침 구운 쫄깃한 베이글과 신선한 재료로 만든 샌드위치입니다.', price: 30000, savings: 8000, frequency: 5, image: 'https://imgur.com/VEuGcyn.jpg', tags: ['음식점'], isAd: true, appliedCurrencyId: 'lc001' },
+                { id: 'prod004', ownerId: 'owner01', name: '건강 샐러드', store: '프레시 가든', icon: '🥗', description: '신선한 채소와 닭가슴살로 만든 건강한 샐러드입니다. 주 3회 배송!', price: 72000, savings: 4000, frequency: 12, image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=3540&auto=format&fit=crop', tags: ['음식점'], appliedCurrencyId: null },
+                { id: 'prod005', ownerId: 'owner01', name: '든든 세차', store: '세차권 2회', icon: '🚗', description: '매월 2회씩 내 차를 깔끔하게 관리하세요', price: 50000, savings: 7000, frequency: 2, image: 'https://imgur.com/9xmSI6N.jpg', tags: ['서비스'], appliedCurrencyId: 'lc002' }
+            ],
+            users: {
+                'consumer01': { name: '김소비', regularScore: 1250, subscriptions: [{ productId: 'prod001', status: 'active', reservation: null }, { productId: 'prod003', status: 'paused', reservation: null }] },
+            },
+            owners: {
+                'owner01': { 
+                    name: '박사장', 
+                    storeName: '열정 카페', 
+                    stats: { subscribers: 127, revenue: 2400000, satisfaction: 94, retentionRate: 88, avgCustomerScore: 850 },
+                    localCurrencies: [
+                        { id: 'lc001', name: '인천e음', discountRate: 10 },
+                        { id: 'lc002', name: '온누리상품권', discountRate: 5 }
+                    ],
+                    activityFeed: [{ text: "이고객님이 '수제 베이글' 구독을 시작했습니다.", time: new Date(Date.now() - 5 * 60000) }, { text: "박단골님이 '매일 아메리카노'를 수령했습니다.", time: new Date(Date.now() - 12 * 60000) }]
+                }
+            }
+        };
+
+        // --- 유틸리티 함수 ---
+        const $ = (selector) => document.querySelector(selector);
+        
+        function showToast(message, type = 'info') {
+            const container = $('#toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                toast.addEventListener('transitionend', () => toast.remove());
+            }, 4000);
+        }
+
+        // --- 모달 관리 ---
+        function renderModal(modalId, content, isOwnerModal = false) {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            if (isOwnerModal) modal.classList.add('owner-app');
+            modal.id = modalId;
+            modal.innerHTML = `<div class="modal-content">${content}</div>`;
+            $('#modal-container').appendChild(modal);
+            modal.addEventListener('click', (event) => { if (event.target === modal) hideModal(modalId); });
+            return modal;
+        }
+
+        function showModal(modalId, content, isOwnerModal = false) {
+            let modal = $(`#${modalId}`);
+            if (!modal && content) modal = renderModal(modalId, content, isOwnerModal);
+            if (modal) {
+                modal.classList.remove('fade-out');
+                modal.classList.add('show');
+            }
+        }
+
+        function hideModal(modalId) {
+            const modal = $(`#${modalId}`);
+            if (modal) {
+                modal.classList.add('fade-out');
+                modal.addEventListener('animationend', () => {
+                    modal.remove();
+                }, { once: true });
+            }
+        }
+
+        // --- 페이지 및 모드 전환 ---
+        function switchPage(event, pageName) {
+            document.querySelectorAll('#consumer-app .page').forEach(page => page.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            
+            $(`#${pageName}-page`).classList.add('active');
+            if (event) event.currentTarget.classList.add('active');
+            else $(`.nav-item[onclick*="'${pageName}'"]`).classList.add('active');
+            
+            state.currentPage = pageName;
+            renderCurrentPage();
+        }
+
+        function toggleOwnerMode() {
+            if (state.currentMode === 'consumer') {
+                state.currentMode = 'owner';
+                $('#consumer-app').classList.add('hidden');
+                $('#owner-app').classList.remove('hidden');
+                renderCurrentPage();
+            }
+        }
+
+        function switchToConsumer() {
+            state.currentMode = 'consumer';
+            $('#owner-app').classList.add('hidden');
+            $('#consumer-app').classList.remove('hidden');
+            const toggle = $('#owner-toggle');
+            if(toggle) toggle.classList.remove('active');
+            switchPage(null, 'home');
+        }
+        
+        function goToHome() { switchPage(null, 'home'); }
+
+        // --- 렌더링 함수 ---
+        function renderCurrentPage() {
+            if (state.currentMode === 'consumer') {
+                switch(state.currentPage) {
+                    case 'home': renderHomePage(); break;
+                    case 'map': renderMapPage(); break;
+                    case 'recommend': renderRecommendPage(); break;
+                    case 'settings': renderSettingsPage(); break;
+                }
+            } else {
+                if (!state.loggedInOwner) renderOwnerLoginPage();
+                else renderOwnerDashboard();
+            }
+        }
+        
+        function renderHomePage() {
+            const user = state.users[state.loggedInUser];
+            let greetingHTML = `<div style="font-size: 24px; font-weight: 700; margin-bottom: 32px; line-height: 1.4;">안녕하세요! 👋<br>우리 동네의 멋진 가게들을&nbsp;만나보세요.</div>`;
+            let pickupCardHTML = `
+                <div class="card" style="background: linear-gradient(135deg, var(--primary-color), var(--primary-dark-color)); color: white; text-align: center;">
+                    <h3 style="font-size: 22px; margin-bottom: 12px; font-weight: 700;">로그인하고 내 구독 관리하기</h3>
+                    <p>나만의 단골 가게를 만들어보세요!</p>
+                    <button class="btn" style="background: rgba(255,255,255,0.2); color: white; margin-top: 20px;" onclick="showLoginModal()">로그인</button>
+                </div>`;
+
+            if (user) {
+                greetingHTML = `<div style="font-size: 24px; font-weight: 700; margin-bottom: 32px; line-height: 1.4;">안녕하세요, <span style="color: var(--accent-color);">${user.name}</span>님! 👋<br>오늘은 어떤 단골 가게에&nbsp;들러볼까요?</div>`;
+                const activeSub = user.subscriptions.find(s => s.status === 'active');
+                if (activeSub) {
+                    const product = state.products.find(p => p.id === activeSub.productId);
+                    let pickupText = `오늘도 픽업할 시간! <br><span style="color: #FEF3C7; font-weight: 600;"> 이번달 ${product.savings.toLocaleString()}원 절약 중💰</span>`;
+                    if(activeSub.reservation) {
+                        pickupText = `${activeSub.reservation}에 만나요!`;
+                    }
+                    
+                    pickupCardHTML = `
+                        <div class="card" style="
+                            background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${product.image});
+                            background-size: cover;
+                            background-position: center;
+                            color: white; padding: 24px; padding-bottom: 70px; position: relative;
+                        ">
+                            <div style="text-align: right; opacity: 0.8; font-size: 12px; font-weight: 500;">${product.store}</div>
+                            <h3 style="font-size: 28px; margin-bottom: 16px; font-weight: 700; text-shadow: 1px 1px 3px rgba(0,0,0,0.5);">${product.name}</h3>
+                            <p style="font-size: 16px; font-weight: 500;">${pickupText}</p>
+                            <div style="position: absolute; bottom: -25px; left: 50%; transform: translateX(-50%);">
+                                <button class="btn" style="background: white; color: var(--primary-dark-color); width: 120px; height: 50px; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);" onclick="showPickupOptions('${product.id}')">지금 받기</button>
+                            </div>
+                        </div>`;
+                } else {
+                     pickupCardHTML = `
+                        <div class="card" style="background: linear-gradient(135deg, var(--secondary-color), var(--secondary-dark-color)); color: white; text-align: center;">
+                            <h3 style="font-size: 22px; margin-bottom: 12px; font-weight: 700;">첫 구독을 시작해보세요!</h3>
+                            <p>우리 동네의 멋진 가게들이 당신을 기다립니다.</p>
+                            <button class="btn" style="background: rgba(255,255,255,0.2); color: white; margin-top: 20px;" onclick="switchPage(event, 'recommend')">추천 보러가기</button>
+                        </div>`;
+                }
+            }
+
+            $('#home-page').innerHTML = `
+                ${greetingHTML}
+                ${pickupCardHTML}
+                <div class="section-title">내 구독 <a href="#" class="more-link" onclick="showAllSubscriptions()">더보기</a></div>
+                ${(user && user.subscriptions.length > 0) ? user.subscriptions.slice(0, 2).map(sub => {
+                    const p = state.products.find(prod => prod.id === sub.productId);
+                    return `<div class="subscription-item" onclick="showProductDetail('${p.id}')">
+                                <div class="subscription-icon" style="background-image: url(${p.image}); background-size: cover; border-radius: 12px;"></div>
+                                <div class="subscription-info"><div class="subscription-name">${p.name}</div><div class="subscription-price">${p.store}</div></div>
+                            </div>`;
+                }).join('') : '<p class="card">구독중인 상품이 없어요.</p>'}
+                <div class="section-title">추천 가게 <a href="#" class="more-link" onclick="switchPage(event, 'recommend')">더보기</a></div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    ${state.products.slice(0, 2).map(p => `
+                        <div class="card" style="padding: 0; overflow: hidden;" onclick="showProductDetail('${p.id}')">
+                            <img src="${p.image}" style="width: 100%; height: 100px; object-fit: cover;">
+                            <div style="padding: 16px; text-align: center; font-weight: 600;">${p.store}</div>
+                        </div>`).join('')}
+                </div>`;
+        }
+
+        function renderMapPage(filterTag = 'All') {
+            const pins = [
+                { id: 'prod001', top: '30%', left: '25%', name: '열정 카페', product: '매일 아메리카노', tag: '카페' },
+                { id: 'prod002', top: '50%', left: '60%', name: '깔끔 세탁소', product: '월 세탁 서비스', tag: '서비스' },
+                { id: 'prod003', top: '70%', left: '35%', name: '맛있는 베이커리', product: '수제 베이글', tag: '음식점' },
+                { id: 'prod004', top: '20%', left: '70%', name: '프레시 가든', product: '건강 샐러드', tag: '음식점' },
+                { id: 'prod005', top: '60%', left: '15%', name: '든든 세차', product: '세차권 2회', tag: '서비스' }
+            ];
+
+            const filteredPins = (filterTag === 'All') ? pins : pins.filter(p => p.tag === filterTag);
+            const pinsHTML = filteredPins.map(p => `<div class="map-pin" style="top: ${p.top}; left: ${p.left};" onclick="showMapInfo(this, '${p.name}', '${p.product}', '${p.id}')"></div>`).join('');
+
+            $('#map-page').innerHTML = `
+                <h2 style="margin-bottom: 20px;">내 주변 가게</h2>
+                <div class="map-filters">
+                    <button class="filter-btn ${filterTag === 'All' ? 'active' : ''}" onclick="renderMapPage('All')">전체</button>
+                    <button class="filter-btn ${filterTag === '카페' ? 'active' : ''}" onclick="renderMapPage('카페')">☕️ 카페</button>
+                    <button class="filter-btn ${filterTag === '음식점' ? 'active' : ''}" onclick="renderMapPage('음식점')">🍽️ 음식점</button>
+                    <button class="filter-btn ${filterTag === '서비스' ? 'active' : ''}" onclick="renderMapPage('서비스')">✨ 서비스</button>
+                </div>
+                <div class="map-container card">
+                    <img src="https://imgur.com/p9qKw57.jpg" style="width:100%; height:100%; object-fit: cover;">
+                    ${pinsHTML}
+                    <div class="map-info" id="map-info-popup"></div>
+                </div>`;
+        }
+
+        function renderRecommendPage() {
+            $('#recommend-page').innerHTML = `
+                <div class="carousel">
+                    <div class="carousel-slide active">🎯 이번 주 특가 구독!</div>
+                    <div class="carousel-slide">🔥 신규 가게 오픈 이벤트</div>
+                    <div class="carousel-slide">💝 친구 추천하고 할인받기</div>
+                </div>
+                <h3 style="margin-bottom: 16px;">우리 동네 인기 구독 TOP 5</h3>
+                <ul style="list-style: none;">
+                    ${state.products.map((p, i) => `
+                    <li class="card" style="display:flex; align-items: center; gap: 16px;" onclick="showProductDetail('${p.id}')">
+                        <div style="background: var(--primary-color); color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">${i+1}</div>
+                        <img src="${p.image}" alt="${p.name}" style="width: 60px; height: 60px; border-radius: 12px; object-fit: cover;">
+                        <div class="subscription-info">
+                            <div class="subscription-name">${p.name}</div>
+                            <div class="subscription-price">${p.store}</div>
+                        </div>
+                        ${p.isAd ? '<div class="ad-badge">광고</div>' : ''}
+                    </li>`).join('')}
+                </ul>`;
+            startCarousel();
+        }
+        
+        function renderSettingsPage() {
+            $('#settings-page').innerHTML = `
+                <h2 style="margin-bottom: 24px;">설정</h2>
+                <div class="card" style="padding: 0;">
+                    <ul style="list-style: none;">
+                        ${['알림 설정', '계정 정보', '결제 관리', '고객센터'].map(item => `<li style="display: flex; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border-color); cursor: pointer;" onclick="showToast('${item} 기능은 준비 중입니다.')"><span>${item}</span><span>></span></li>`).join('')}
+                        <li style="display: flex; justify-content: space-between; padding: 16px 20px; cursor: pointer;" onclick="toggleOwnerMode()">
+                            <span>점주 모드로 전환</span>
+                            <div class="toggle-switch" id="owner-toggle"></div>
+                        </li>
+                    </ul>
+                </div>`;
+        }
+        
+        function renderOwnerLoginPage() {
+            $('#owner-app').innerHTML = `
+                <div class="page active" style="display: flex; align-items: center; justify-content: center; height: 100%;">
+                    <div style="max-width: 320px; width: 100%;">
+                        <h2 style="text-align: center; font-size: 24px; font-weight: 700; margin-bottom: 32px; color: var(--secondary-color);">점주 로그인</h2>
+                        <div class="form-group"><label class="form-label">아이디</label><input type="text" class="form-input" id="owner-id-input" value="owner01"></div>
+                        <div class="form-group"><label class="form-label">비밀번호</label><input type="password" class="form-input" id="owner-password-input" value="password123"></div>
+                        <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="ownerLogin()">로그인</button>
+                        <div style="text-align: center; margin-top: 20px;"><a href="#" style="color: var(--secondary-color);" onclick="switchToConsumer()">소비자 모드로 전환</a></div>
+                    </div>
+                </div>`;
+        }
+
+        function renderOwnerDashboard() {
+            const owner = state.owners[state.loggedInOwner];
+            if (!owner) return;
+            
+            const productsHTML = state.products.filter(p => p.ownerId === state.loggedInOwner).map(p => `
+                <div class="subscription-item" style="background: #374151; border: 1px solid #4B5563;">
+                    <div class="subscription-icon" style="background-image: url(${p.image}); background-size: cover; border-radius: 12px;"></div>
+                    <div class="subscription-info"><div class="subscription-name" style="color: white;">${p.name}</div><div class="subscription-price" style="color: #9CA3AF;">월 ${p.price.toLocaleString()}원</div></div>
+                    <button class="btn btn-outline btn-small" style="color: var(--secondary-color); border-color: var(--secondary-color);" onclick="showProductForm('${p.id}')">수정</button>
+                </div>`).join('');
+
+            const activityFeedHTML = owner.activityFeed.sort((a,b) => b.time - a.time).map(item => `<div class="activity-item"><div>${item.text}</div><div class="activity-time">${new Date(item.time).toLocaleString('ko-KR')}</div></div>`).join('');
+
+            const score = calculateOwnerScore(owner);
+
+            $('#owner-app').innerHTML = `
+                <div class="owner-dashboard-layout">
+                    <div class="header"><div class="logo">Sub<span class="local">Local</span> 점주</div><a href="#" style="color: var(--secondary-color);" onclick="switchToConsumer()">소비자 모드</a></div>
+                    <div class="content">
+                        <h2 style="margin-bottom: 20px;">대시보드</h2>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+                            <div class="card" style="padding: 20px; text-align: center; margin: 0; cursor: pointer;" onclick="showScoreDetailModal()">
+                                <div style="font-size: 24px; font-weight: 700; color: var(--secondary-color);">${score}</div>
+                                <div style="font-size: 14px; color: #9CA3AF;">구독 자산 스코어</div>
+                            </div>
+                            <div class="card" style="padding: 20px; text-align: center; margin: 0;">
+                                <div style="font-size: 24px; font-weight: 700; color: var(--secondary-color);">${owner.stats.subscribers}</div>
+                                <div style="font-size: 14px; color: #9CA3AF;">구독자 수</div>
+                            </div>
+                            <div class="card" style="padding: 20px; text-align: center; margin: 0;">
+                                <div style="font-size: 24px; font-weight: 700; color: var(--secondary-color);">${(owner.stats.revenue/1000000).toFixed(1)}M</div>
+                                <div style="font-size: 14px; color: #9CA3AF;">월 매출</div>
+                            </div>
+                             <div class="card" style="padding: 20px; text-align: center; margin: 0;">
+                                <div style="font-size: 24px; font-weight: 700; color: var(--secondary-color);">${owner.stats.satisfaction}%</div>
+                                <div style="font-size: 14px; color: #9CA3AF;">만족도</div>
+                            </div>
+                        </div>
+                        <div class="card"><h3 style="margin-bottom: 16px;">운영 중인 구독 상품</h3><div id="owner-products">${productsHTML || '<p>등록된 상품이 없습니다.</p>'}</div></div>
+                        <div class="card"><h3 style="margin-bottom: 16px;">실시간 주문 알림</h3><div id="activity-feed">${activityFeedHTML}</div></div>
+                    </div>
+                    <div class="footer">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                            <button class="btn btn-primary" onclick="showProductForm()">새 상품 만들기</button>
+                            <button class="btn btn-secondary" onclick="showBenefitsManager()">혜택 관리</button>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        // --- 기능 함수 ---
+        function completeLogin() {
+            const userId = $('#login-id-input').value;
+            if (state.users[userId]) {
+                state.loggedInUser = userId;
+                hideModal('loginModal');
+                showToast(`환영합니다, ${state.users[userId].name}님!`, 'success');
+                renderAuthLinks();
+                renderHomePage();
+            } else { showToast('존재하지 않는 사용자입니다.', 'error'); }
+        }
+
+        function ownerLogin() {
+            const ownerId = $('#owner-id-input').value;
+            if (state.owners[ownerId]) {
+                state.loggedInOwner = ownerId;
+                renderOwnerDashboard();
+                showToast(`${state.owners[ownerId].storeName} 점주님, 환영합니다!`, 'success');
+            } else { showToast('점주 정보가 올바르지 않습니다.', 'error'); }
+        }
+        
+        function showProductDetail(productId) {
+            const product = state.products.find(p => p.id === productId);
+            if (!product) return;
+            
+            let discountInfo = '';
+            if (product.appliedCurrencyId && product.ownerId) {
+                const owner = state.owners[product.ownerId];
+                if (owner && owner.localCurrencies) {
+                    const currency = owner.localCurrencies.find(c => c.id === product.appliedCurrencyId);
+                    if (currency) {
+                        discountInfo = `<div class="card" style="background-color: #E0F2F1; text-align: center; margin-top: 16px;"><p style="color: var(--secondary-dark-color); font-weight: 600;">💰 ${currency.name}으로 결제 시 ${currency.discountRate}% 추가 할인!</p></div>`;
+                    }
+                }
+            }
+
+            const content = `<button class="modal-close" onclick="hideModal('productDetailModal')">&times;</button><img src="${product.image}" alt="${product.name}" style="width: 100%; height: 180px; border-radius: 16px; object-fit: cover; margin-bottom: 20px;"><h3 class="modal-title" style="text-align: left; margin-bottom: 8px;">${product.name}</h3><p style="color: var(--text-secondary); margin-bottom: 16px;">${product.store}</p><p style="margin-bottom: 24px;">${product.description}</p><div class="card" style="background-color: var(--bg-light);"><h4 style="margin-bottom: 8px;">월 ${product.price.toLocaleString()}원</h4><p style="color: var(--text-secondary);">매월 ${product.frequency}회 제공</p></div>${discountInfo}<button class="btn btn-secondary" style="width: 100%; margin-bottom: 12px;" onclick="getAIRecommendation('${product.name}')">🤖 AI에게 물어보기</button><button class="btn btn-primary" style="width: 100%;" onclick="completeSubscription('${product.id}')">이 상품 구독하기</button>`;
+            showModal('productDetailModal', content);
+        }
+
+        function completeSubscription(productId) {
+            if (!state.loggedInUser) { showToast('로그인이 필요합니다.', 'error'); showLoginModal(); return; }
+            const user = state.users[state.loggedInUser];
+            if (user.subscriptions.some(s => s.productId === productId)) { showToast('이미 구독 중인 상품입니다.'); return; }
+            user.subscriptions.push({ productId, status: 'active' });
+            hideModal('productDetailModal');
+            showToast('구독이 완료되었습니다!', 'success');
+            const product = state.products.find(p => p.id === productId);
+            addActivityFeed(product.ownerId, `${user.name}님이 '${product.name}' 구독을 시작했습니다.`);
+            renderCurrentPage();
+        }
+        
+        function showAllSubscriptions() {
+            if (!state.loggedInUser) { showToast('로그인이 필요합니다.', 'error'); showLoginModal(); return; }
+            const user = state.users[state.loggedInUser];
+            const subsHTML = user.subscriptions.map(sub => {
+                const product = state.products.find(p => p.id === sub.productId);
+                const isActive = sub.status === 'active';
+                return `<div class="subscription-item" style="opacity: ${isActive ? 1 : 0.6};"><div class="subscription-icon" style="background-image: url(${product.image}); background-size: cover; border-radius: 12px;"></div><div class="subscription-info"><div class="subscription-name">${product.name}</div><div class="subscription-price">${product.store}</div><div style="font-size: 12px; color: ${isActive ? 'var(--secondary-color)' : 'var(--text-secondary)'}; margin-top: 4px;">${isActive ? '활성 구독' : '일시정지'}</div></div><div style="display: flex; flex-direction: column; gap: 8px;">${isActive ? `<button class="btn btn-outline btn-small" onclick="showGiftModal('${sub.productId}')">선물</button><button class="btn btn-outline btn-small" onclick="showTransferModal('${sub.productId}')">양도</button><button class="btn btn-outline btn-small" onclick="pauseSubscription('${sub.productId}')">정지</button>` : `<button class="btn btn-primary btn-small" onclick="resumeSubscription('${sub.productId}')">재개</button>`}</div></div>`;
+            }).join('');
+            const content = `<button class="modal-close" onclick="hideModal('allSubscriptionsModal')">&times;</button><h3 class="modal-title">내 모든 구독</h3>${subsHTML || '<p>구독 상품이 없습니다.</p>'}<button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="hideModal('allSubscriptionsModal'); switchPage(null, 'recommend');">새 구독 찾기</button>`;
+            showModal('allSubscriptionsModal', content);
+        }
+
+        function pauseSubscription(productId) {
+            const sub = state.users[state.loggedInUser].subscriptions.find(s => s.productId === productId);
+            if (sub) sub.status = 'paused';
+            showToast('구독이 일시정지되었습니다.');
+            hideModal('allSubscriptionsModal');
+            showAllSubscriptions();
+            renderCurrentPage();
+        }
+        
+        function resumeSubscription(productId) {
+            const sub = state.users[state.loggedInUser].subscriptions.find(s => s.productId === productId);
+            if (sub) sub.status = 'active';
+            showToast('구독을 다시 시작합니다!', 'success');
+            hideModal('allSubscriptionsModal');
+            showAllSubscriptions();
+            renderCurrentPage();
+        }
+
+        function addActivityFeed(ownerId, message) {
+            const owner = state.owners[ownerId];
+            if (owner) {
+                owner.activityFeed.unshift({ text: message, time: new Date() });
+                if (state.currentMode === 'owner' && state.loggedInOwner === ownerId) renderOwnerDashboard();
+            }
+        }
+
+        function showPickupOptions(productId) {
+            const content = `<button class="modal-close" onclick="hideModal('pickupOptionsModal')">&times;</button><h3 class="modal-title">픽업 방법 선택</h3><button class="btn btn-primary" style="width: 100%; margin-bottom: 12px;" onclick="pickupNow('${productId}')">지금 받기 (QR)</button><button class="btn btn-outline" style="width: 100%;" onclick="showTimeReservation('${productId}')">나중에 받기</button>`;
+            showModal('pickupOptionsModal', content);
+        }
+        
+        function pickupNow(productId) {
+            hideModal('pickupOptionsModal');
+            const qrContent = `<button class="modal-close" onclick="hideModal('qrModal')">&times;</button><h3 class="modal-title">QR 코드로 픽업하기</h3><div style="text-align: center; margin: 20px 0;"><img src="https://imgur.com/ESSU0dQ.jpg" alt="QR Code" style="width: 200px; height: 200px; border-radius: 12px;"><p style="margin-top: 16px; color: var(--text-secondary);">가게에서 이 QR 코드를 보여주세요</p></div>`;
+            showModal('qrModal', qrContent);
+            const product = state.products.find(p => p.id === productId);
+            const user = state.users[state.loggedInUser];
+            addActivityFeed(product.ownerId, `${user.name}님이 '${product.name}'을(를) 수령했습니다.`);
+            showToast(`${product.name} 픽업이 완료되었습니다.`, 'success');
+        }
+
+        function showTimeReservation(productId) {
+            hideModal('pickupOptionsModal');
+            const content = `<button class="modal-close" onclick="hideModal('timeReservationModal')">&times;</button><h3 class="modal-title">픽업 시간 예약</h3><div class="form-group"><label class="form-label">날짜</label><input type="date" class="form-input" id="pickup-date"></div><div class="form-group"><label class="form-label">시간</label><input type="time" class="form-input" id="pickup-time"></div><button class="btn btn-primary" style="width: 100%;" onclick="confirmReservation('${productId}')">예약 완료</button>`;
+            showModal('timeReservationModal', content);
+        }
+
+        function confirmReservation(productId) {
+            const timeValue = $('#pickup-time').value;
+            if (!timeValue) {
+                showToast('시간을 선택해주세요.', 'error');
+                return;
+            }
+            const user = state.users[state.loggedInUser];
+            const sub = user.subscriptions.find(s => s.productId === productId);
+            if (sub) {
+                sub.reservation = timeValue;
+            }
+            hideModal('timeReservationModal');
+            showToast('픽업 시간이 예약되었습니다.', 'success');
+            renderHomePage();
+        }
+
+        function showProductForm(productIdToEdit = null) {
+            const isEditing = !!productIdToEdit;
+            const product = isEditing ? state.products.find(p => p.id === productIdToEdit) : {};
+            const owner = state.owners[state.loggedInOwner];
+            const currencyOptions = owner.localCurrencies.map(c => `<option value="${c.id}" ${product.appliedCurrencyId === c.id ? 'selected' : ''}>${c.name} (${c.discountRate}%)</option>`).join('');
+
+            const content = `<button class="modal-close" onclick="hideModal('productFormModal')">&times;</button><h3 class="modal-title">${isEditing ? '상품 수정' : '새 상품 만들기'}</h3><label for="product-image-input" class="image-uploader" id="image-uploader">${isEditing && product.image ? `<img src="${product.image}" id="product-image-preview">` : `<span>이미지 업로드</span>`}</label><input type="file" id="product-image-input" class="hidden" accept="image/*"><div class="form-group"><label class="form-label">상품명</label><input type="text" class="form-input" id="product-name" value="${product.name || ''}"></div><div class="form-group"><label class="form-label">상품 설명</label><textarea class="form-input" id="product-description" style="height: 80px;">${product.description || ''}</textarea><button type="button" class="btn btn-outline btn-small" style="width:100%; margin-top: 8px;" onclick="generateAIDescription(this)">✨ AI로 설명 생성</button></div><div class="form-group"><label class="form-label">월 구독료 (원)</label><input type="number" class="form-input" id="product-price" value="${product.price || ''}"></div><div class="form-group"><label class="form-label">지역화폐 할인 적용</label><select class="form-input" id="product-currency"><option value="">적용 안함</option>${currencyOptions}</select></div><button class="btn btn-primary" style="width: 100%;" onclick="registerProduct('${productIdToEdit || ''}')">${isEditing ? '수정 완료' : '상품 등록'}</button>`;
+            showModal('productFormModal', content, true);
+            $('#product-image-input').addEventListener('change', (event) => {
+                if (event.target.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => { $('#image-uploader').innerHTML = `<img src="${e.target.result}" id="product-image-preview">`; };
+                    reader.readAsDataURL(event.target.files[0]);
+                }
+            });
+        }
+        
+        function registerProduct(productIdToEdit) {
+            const name = $('#product-name').value, price = parseInt($('#product-price').value), description = $('#product-description').value, image = $('#product-image-preview')?.src || 'https://placehold.co/400x300/e2e8f0/64748b?text=No+Image', appliedCurrencyId = $('#product-currency').value || null;
+            if (!name || !price) { showToast('상품명과 가격을 모두 입력해주세요.', 'error'); return; }
+            if (productIdToEdit) {
+                Object.assign(state.products.find(p => p.id === productIdToEdit), { name, price, description, image, appliedCurrencyId });
+                showToast('상품 정보가 수정되었습니다.', 'success');
+            } else {
+                state.products.push({ id: 'prod' + Date.now(), ownerId: state.loggedInOwner, store: state.owners[state.loggedInOwner].storeName, icon: '🆕', name, price, description, image, frequency: 30, tags: [], appliedCurrencyId });
+                showToast('새 상품이 등록되었습니다!', 'success');
+            }
+            hideModal('productFormModal');
+            renderOwnerDashboard();
+        }
+        
+        function showMapInfo(pin, storeName, product, productId) {
+            const infoPopup = $('#map-info-popup');
+            infoPopup.innerHTML = `<h4 style="margin-bottom: 8px;">${storeName}</h4><p style="color: var(--text-secondary); font-size: 14px;">${product}</p><button class="btn btn-primary btn-small" style="margin-top: 8px;" onclick="showProductDetail('${productId}')">상세보기</button>`;
+            infoPopup.style.top = (pin.offsetTop + 30) + 'px';
+            infoPopup.style.left = (pin.offsetLeft - 80) + 'px';
+            infoPopup.classList.add('show');
+            setTimeout(() => { infoPopup.classList.remove('show'); }, 4000);
+        }
+
+        let carouselInterval;
+        function startCarousel() {
+            clearInterval(carouselInterval);
+            let carouselIndex = 0;
+            const slides = document.querySelectorAll('.carousel-slide');
+            if(slides.length === 0) return;
+            carouselInterval = setInterval(() => {
+                if(slides[carouselIndex]) slides[carouselIndex].classList.remove('active');
+                carouselIndex = (carouselIndex + 1) % slides.length;
+                if(slides[carouselIndex]) slides[carouselIndex].classList.add('active');
+            }, 3000);
+        }
+
+        // --- Gemini API 기능 ---
+        async function callGemini(prompt, buttonElement = null) {
+            let originalButtonText;
+            if (buttonElement) {
+                originalButtonText = buttonElement.innerHTML;
+                buttonElement.disabled = true;
+                buttonElement.innerHTML = '<div class="loading"></div>';
+            }
+
+            const apiKey = ""; // API 키는 비워두세요
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) throw new Error(`API call failed: ${response.status}`);
+                const result = await response.json();
+                if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts[0]) {
+                    return result.candidates[0].content.parts[0].text;
+                }
+                return "죄송합니다, AI 응답을 처리하는 데 문제가 발생했습니다.";
+            } catch (error) {
+                console.error("Error calling Gemini API:", error);
+                showToast('AI 서비스에 연결하는 중 오류가 발생했습니다.', 'error');
+                return null;
+            } finally {
+                if (buttonElement) {
+                    buttonElement.disabled = false;
+                    buttonElement.innerHTML = originalButtonText;
+                }
+            }
+        }
+
+        async function getAIRecommendation(productName) {
+            const content = `<button class="modal-close" onclick="hideModal('aiRecommendModal')">&times;</button><h3 class="modal-title">🤖 AI 추천</h3><div id="ai-recommend-content"><div class="loading" style="margin: 20px auto; display: block;"></div></div>`;
+            showModal('aiRecommendModal', content);
+            const recommendation = await callGemini(`'${productName}' 구독 상품에 대한 짧고 매력적인 추천사를 한국어로 작성해줘.`);
+            $('#ai-recommend-content').innerHTML = `<p style="line-height: 1.7; text-align: center;">${recommendation}</p>`;
+        }
+
+        async function generateAIDescription(buttonElement) {
+            const productName = $('#product-name').value;
+            if (!productName) {
+                showToast('상품명을 먼저 입력해주세요.', 'error');
+                return;
+            }
+            const prompt = `'${productName}'이라는 상품에 대한 매력적이고 친근한 상품 설명을 한국어로 100자 내외로 작성해줘.`;
+            const description = await callGemini(prompt, buttonElement);
+            if (description) {
+                $('#product-description').value = description;
+                showToast('AI 설명이 생성되었습니다!', 'success');
+            }
+        }
+        
+        async function generateAIGiftMessage(buttonElement, productId) {
+            const product = state.products.find(p => p.id === productId);
+            const recipientId = $('#gift-id-input').value;
+            if (!recipientId) {
+                showToast('선물받을 친구의 아이디를 먼저 입력해주세요.', 'error');
+                return;
+            }
+            const prompt = `'${recipientId}'님에게 '${product.name}'(${product.store}) 구독권을 선물하려고 합니다. 따뜻하고 친근한 선물 메시지를 한국어로 50자 내외로 작성해줘.`;
+            const message = await callGemini(prompt, buttonElement);
+            if (message) {
+                $('#gift-message-textarea').value = message;
+            }
+        }
+
+        // --- 챗봇 기능 ---
+        let chatHistory = [];
+        function showAIChatbotModal() {
+            const content = `
+                <button class="modal-close" onclick="hideModal('aiChatbotModal')">&times;</button>
+                <h3 class="modal-title">AI 챗봇 '써비'</h3>
+                <div class="chatbot-messages" id="chatbot-messages">
+                    <div class="chat-message bot"><div class="bubble">안녕하세요! SubLocal의 AI 챗봇 써비입니다. 무엇을 도와드릴까요?</div></div>
+                </div>
+                <form id="chatbot-input-form" class="chatbot-input-form">
+                    <input type="text" id="chatbot-input" class="form-input" placeholder="메시지를 입력하세요..." autocomplete="off">
+                    <button type="submit" class="btn btn-primary">전송</button>
+                </form>
+            `;
+            showModal('aiChatbotModal', content);
+            $('#chatbot-input-form').addEventListener('submit', handleChatSubmit);
+        }
+
+        async function handleChatSubmit(event) {
+            event.preventDefault();
+            const input = $('#chatbot-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            addChatMessage(message, 'user');
+            input.value = '';
+
+            const prompt = `You are 'Subby', a friendly and helpful chatbot for the 'SubLocal' app. Your goal is to assist users with their questions about local store subscriptions. You can answer questions about how the app works, recommend products based on user preferences (e.g., coffee, laundry, bakery), and provide general assistance. Keep your answers concise, friendly, and in Korean. Here is the user's question: '${message}'`;
+            
+            const response = await callGemini(prompt);
+            if (response) {
+                addChatMessage(response, 'bot');
+            }
+        }
+
+        function addChatMessage(message, sender) {
+            const messageContainer = $('#chatbot-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${sender}`;
+            messageDiv.innerHTML = `<div class="bubble">${message}</div>`;
+            messageContainer.appendChild(messageDiv);
+            messageContainer.scrollTop = messageContainer.scrollHeight;
+        }
+
+
+        // --- 인증 및 초기화 ---
+        function renderAuthLinks() {
+            const user = state.users[state.loggedInUser];
+            const container = $('#auth-links-consumer');
+            if (user) {
+                container.innerHTML = `<span style="color: var(--primary-color); font-weight: 600;">${user.name}님</span>`;
+            } else {
+                container.innerHTML = `<a href="#" onclick="showLoginModal()">로그인</a><a href="#" onclick="showSignupModal()">가입</a>`;
+            }
+        }
+        
+        function showLoginModal() {
+            const content = `<button class="modal-close" onclick="hideModal('loginModal')">&times;</button><h3 class="modal-title">로그인</h3><div class="form-group"><label class="form-label">아이디</label><input id="login-id-input" type="text" class="form-input" placeholder="consumer01" value="consumer01"></div><button class="btn btn-primary" style="width: 100%;" onclick="completeLogin()">로그인</button>`;
+            showModal('loginModal', content);
+        }
+
+        function showSignupModal() {
+            const content = `<button class="modal-close" onclick="hideModal('signupModal')">&times;</button><h3 class="modal-title">회원가입</h3><div class="form-group"><label class="form-label">이름</label><input id="signup-name-input" type="text" class="form-input" placeholder="이름 입력"></div><button class="btn btn-primary" style="width: 100%;" onclick="completeSignup()">가입하기</button>`;
+            showModal('signupModal', content);
+        }
+        
+        function completeSignup() {
+            const name = $('#signup-name-input').value;
+            if(!name) { showToast('이름을 입력해주세요.', 'error'); return; }
+            const newId = 'user' + Date.now();
+            state.users[newId] = { name: name, subscriptions: [], regularScore: 0 };
+            state.loggedInUser = newId;
+            hideModal('signupModal');
+            showToast(`${name}님, 환영합니다!`, 'success');
+            renderAuthLinks();
+            renderHomePage();
+        }
+        
+        function showGiftModal(productId) {
+            const content = `<button class="modal-close" onclick="hideModal('giftModal')">&times;</button><h3 class="modal-title">구독 선물하기</h3><p style="text-align: center; margin-bottom: 16px;">선물할 친구의 아이디를 입력하세요.</p><div class="form-group"><input id="gift-id-input" type="text" class="form-input" placeholder="친구 아이디"></div><div class="form-group"><label class="form-label">선물 메시지</label><textarea id="gift-message-textarea" class="form-input" rows="3"></textarea><button type="button" class="btn btn-outline btn-small" style="width:100%; margin-top: 8px;" onclick="generateAIGiftMessage(this, '${productId}')">✨ AI로 메시지 추천</button></div><button class="btn btn-primary" style="width: 100%;" onclick="completeGift('${productId}')">선물하기</button>`;
+            showModal('giftModal', content);
+        }
+        function completeGift(productId) {
+            const friendId = $('#gift-id-input').value;
+            if (!friendId) { showToast('친구 아이디를 입력해주세요.', 'error'); return; }
+            hideModal('giftModal');
+            showToast(`${friendId}님에게 구독권을 선물했습니다!`, 'success');
+        }
+
+        function showTransferModal(productId) {
+            const content = `<button class="modal-close" onclick="hideModal('transferModal')">&times;</button><h3 class="modal-title">구독 양도하기</h3><p style="text-align: center; margin-bottom: 16px;">양도받을 분의 아이디를 입력하세요.</p><div class="form-group"><input id="transfer-id-input" type="text" class="form-input" placeholder="양도받을 분 아이디"></div><button class="btn btn-primary" style="width: 100%;" onclick="completeTransfer('${productId}')">양도하기</button>`;
+            showModal('transferModal', content);
+        }
+        function completeTransfer(productId) {
+            const transferId = $('#transfer-id-input').value;
+            if (!transferId) { showToast('양도받을 분의 아이디를 입력해주세요.', 'error'); return; }
+            hideModal('transferModal');
+            showToast(`${transferId}님에게 구독권을 양도했습니다.`, 'success');
+        }
+        
+        function showBenefitsManager() {
+            const owner = state.owners[state.loggedInOwner];
+            const currenciesHTML = owner.localCurrencies.map(c => `<div class="subscription-item" style="background: #374151;"><span>${c.name} (${c.discountRate}%)</span><button class="btn btn-outline btn-small" style="color: #EF4444; border-color: #EF4444;" onclick="deleteCurrency('${c.id}')">삭제</button></div>`).join('');
+            const content = `<button class="modal-close" onclick="hideModal('benefitsModal')">&times;</button><h3 class="modal-title">혜택 관리</h3><div class="card"><h4 style="margin-bottom: 16px;">등록된 지역화폐</h4>${currenciesHTML || '<p>등록된 지역화폐가 없습니다.</p>'}</div><div class="card"><h4 style="margin-bottom: 16px;">새 지역화폐 추가</h4><div class="form-group"><label class="form-label">화폐 이름</label><input type="text" id="currency-name" class="form-input"></div><div class="form-group"><label class="form-label">할인율 (%)</label><input type="number" id="currency-rate" class="form-input"></div><button class="btn btn-primary" style="width: 100%;" onclick="addCurrency()">추가하기</button></div>`;
+            showModal('benefitsModal', content, true);
+        }
+
+        function addCurrency() {
+            const name = $('#currency-name').value;
+            const rate = parseInt($('#currency-rate').value);
+            if (!name || !rate) { showToast('화폐 이름과 할인율을 입력하세요.', 'error'); return; }
+            state.owners[state.loggedInOwner].localCurrencies.push({ id: 'lc' + Date.now(), name, discountRate: rate });
+            hideModal('benefitsModal');
+            showBenefitsManager();
+            showToast('새 지역화폐가 추가되었습니다.', 'success');
+        }
+
+        function deleteCurrency(currencyId) {
+            const owner = state.owners[state.loggedInOwner];
+            owner.localCurrencies = owner.localCurrencies.filter(c => c.id !== currencyId);
+            hideModal('benefitsModal');
+            showBenefitsManager();
+            showToast('지역화폐가 삭제되었습니다.', 'success');
+        }
+        
+        // --- 스코어링 기능 ---
+        function calculateOwnerScore(owner) {
+            const { subscribers, retentionRate, satisfaction, avgCustomerScore } = owner.stats;
+            const score = (subscribers * 0.4) + (retentionRate * 3) + (satisfaction * 2) + (avgCustomerScore * 0.1);
+            return Math.round(score);
+        }
+
+        function showScoreDetailModal() {
+            const owner = state.owners[state.loggedInOwner];
+            const score = calculateOwnerScore(owner);
+            const content = `
+                <button class="modal-close" onclick="hideModal('scoreDetailModal')">&times;</button>
+                <h3 class="modal-title">구독 자산 스코어 상세</h3>
+                <div style="text-align: center; margin-bottom: 24px;">
+                    <div style="font-size: 48px; font-weight: 700; color: var(--secondary-color);">${score}</div>
+                    <p>우리 가게의 구독 경쟁력</p>
+                </div>
+                <div class="card">
+                    <p><strong>구독자 수:</strong> ${owner.stats.subscribers}명</p>
+                    <p><strong>고객 유지율:</strong> ${owner.stats.retentionRate}%</p>
+                    <p><strong>고객 만족도:</strong> ${owner.stats.satisfaction}%</p>
+                    <p><strong>평균 단골 지수:</strong> ${owner.stats.avgCustomerScore}점</p>
+                </div>
+                <button class="btn btn-primary" style="width: 100%; margin-bottom: 12px;" onclick="getAIOperatingTips(this)">✨ AI 운영 팁 받기</button>
+                <button class="btn btn-outline" style="width: 100%;" onclick="getAILoanProposal(this)">🏦 AI 신용 분석 및 대출 제안</button>
+            `;
+            showModal('scoreDetailModal', content, true);
+        }
+        
+        async function getAIOperatingTips(buttonElement) {
+            const owner = state.owners[state.loggedInOwner];
+            const prompt = `저는 로컬 가게 구독 플랫폼을 운영하는 '${owner.storeName}'의 점주입니다. 현재 저의 구독 비즈니스 현황은 다음과 같습니다: 구독자 수 ${owner.stats.subscribers}명, 고객 유지율 ${owner.stats.retentionRate}%, 고객 만족도 ${owner.stats.satisfaction}%. 이 데이터를 기반으로, 구독자 수를 늘리고 고객 만족도를 높일 수 있는 구체적인 운영 팁 2가지를 한국어로 제안해주세요.`;
+            const tips = await callGemini(prompt, buttonElement);
+            if (tips) {
+                const tipContent = `<div class="card" style="background: #374151; margin-top: 16px;"><p style="white-space: pre-wrap;">${tips}</p></div>`;
+                buttonElement.insertAdjacentHTML('afterend', tipContent);
+            }
+        }
+
+        async function getAILoanProposal(buttonElement) {
+            const owner = state.owners[state.loggedInOwner];
+            const score = calculateOwnerScore(owner);
+            const prompt = `소상공인 대출 심사 AI입니다. 가게 이름 '${owner.storeName}', 구독 자산 스코어 ${score}점, 월 매출 ${owner.stats.revenue.toLocaleString()}원, 고객 유지율 ${owner.stats.retentionRate}% 데이터를 기반으로, 이 가게의 신용도를 '매우 우수', '우수', '보통', '주의' 중 하나로 평가하고, 최대 대출 가능 금액과 연 이자율을 포함한 가상의 소상공인 대출 상품을 한국어로 제안해주세요.`;
+            const proposal = await callGemini(prompt, buttonElement);
+            if (proposal) {
+                const proposalContent = `<div class="card" style="background: #374151; margin-top: 16px;"><p style="white-space: pre-wrap;">${proposal}</p></div>`;
+                buttonElement.insertAdjacentHTML('afterend', proposalContent);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAuthLinks();
+            renderCurrentPage();
+        });
+    </script>
+</body>
+</html>
