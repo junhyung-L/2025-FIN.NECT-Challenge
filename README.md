@@ -174,7 +174,7 @@
 
 ## 13) HTML을 통한 앱 구현 (초안)
 
-**실행 데모**: [바로가기](https://<junhyung-L>.github.io/2025-FIN.NECT-Challenge/서브로컬_최종버전.html)
+**실행 데모**: [바로가기](https://junhyung-L.github.io/2025-FIN.NECT-Challenge/서브로컬_최종버전.html)
 
 > 현재 저장소는 **기획/발표 문서와 README** 중심으로 공개되어 있으며(아이디어 기획),
 > 코드/설계 산출물은 MVP 정리 후 순차 공개 예정입니다(html을 통한 앱 구상구현).
